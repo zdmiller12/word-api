@@ -1,0 +1,43 @@
+line-length = 88
+indent-width = 4
+target-version = "py313"
+
+[format]
+indent-style = "space"
+quote-style = "double"
+
+[lint]
+ignore = [
+    "ANN002",
+    "ANN003",
+    "ANN204",
+    "ANN401",
+    "D105",
+    "D107",
+]
+select = [
+    "A",
+    "ANN",
+    "ARG",
+    "B",
+    "C4",
+    "D",
+    "DOC",
+    "E",
+    "ERA",
+    "EXE",
+    "F",
+    "I",
+    "N",
+    "NPY",
+    "PD",
+    "PL",
+    "PT",
+    "Q",
+    "RET",
+    "SIM",
+    "UP",
+]
+
+[lint.pydocstyle]
+convention = "numpy"
