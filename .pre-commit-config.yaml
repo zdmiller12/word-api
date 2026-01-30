@@ -41,7 +41,6 @@ repos:
     rev: v3.14.2
     hooks:
       - id: markdown-link-check
-        args: [ "--config", ".markdown-link-check.json" ]
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.2
