@@ -45,7 +45,7 @@ jobs:
   build-and-push-scraper:
     runs-on: ubuntu-latest
     env:
-      image-name: ${{ secrets.DOCKERHUB_USERNAME }}/word/scraper
+      image-name: ${{ secrets.DOCKERHUB_USERNAME }}/word-scraper
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.1
