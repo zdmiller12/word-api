@@ -1,2 +1,3 @@
-# word-api
-Crossword data garden and API
+# Word API
+
+Crossword data garden and API.
