@@ -56,6 +56,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
+          build-args: |
+            WORD_API_GIT_SHA=${{ github.sha }}
           cache-from: type=registry,ref=${{ env.image-name }}:buildcache
           cache-to: type=registry,ref=${{ env.image-name }}:buildcache,mode=max
           context: ${{ github.workspace }}/services/scraper
