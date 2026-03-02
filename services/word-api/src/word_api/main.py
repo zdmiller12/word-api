@@ -6,7 +6,7 @@ import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from word_api.routes import put_puzzle
+from word_api.routes import get_dataset, put_puzzle
 
 app = FastAPI(
     title="Word API",
@@ -14,6 +14,7 @@ app = FastAPI(
 )
 
 app.include_router(put_puzzle.router)
+app.include_router(get_dataset.router)
 
 
 @app.exception_handler(Exception)

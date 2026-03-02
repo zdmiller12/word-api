@@ -12,7 +12,7 @@ import httpx
 from lxml import etree
 
 from word_api import constants as ct
-from word_api.models import LocalFile, PutPuzzleResponse
+from word_api.models import CluePair, DatasetRecord, LocalFile, PutPuzzleResponse
 from word_api.util import get_md5sum_from_path
 
 if TYPE_CHECKING:
@@ -83,6 +83,31 @@ async def save_board(date_: date, puzzle: dict) -> Path:
     async with aiofiles.open(board_out, "w") as f:
         await f.write(etree.tostring(root, encoding="unicode"))
     return board_out
+
+
+def extract_dataset_record(date_: date, puzzle: dict) -> DatasetRecord:
+    """Extract a DatasetRecord from a raw NYT puzzle dict."""
+    body = puzzle["body"][0]
+    cells = body["cells"]
+    entries = []
+    for clue in body["clues"]:
+        answer = "".join(cells[i].get("answer", "") for i in clue["cells"])
+        entries.append(
+            CluePair(
+                number=clue["label"],
+                direction=clue["direction"].lower(),
+                answer=answer,
+                clue=clue["text"][0]["plain"],
+                length=len(answer),
+            )
+        )
+    return DatasetRecord(
+        date=date_,
+        constructors=puzzle.get("constructors", []),
+        editor=puzzle.get("editor"),
+        dimensions=body["dimensions"],
+        entries=entries,
+    )
 
 
 async def save_puzzle(date_: date, puzzle: dict) -> Path:

@@ -51,3 +51,24 @@ class PutPuzzleResponse(BaseModel):
     date: DateType
     saved: list[LocalFile]
     source: Literal["nyt"] = "nyt"
+
+
+class CluePair(BaseModel):
+    """A single crossword entry: an answer word paired with its clue."""
+
+    number: str
+    direction: Literal["across", "down"]
+    answer: str
+    clue: str
+    length: int
+
+
+class DatasetRecord(BaseModel):
+    """One puzzle's data extracted for agent training."""
+
+    source: Literal["nyt"] = "nyt"
+    date: DateType
+    constructors: list[str]
+    editor: str | None
+    dimensions: dict[str, int]
+    entries: list[CluePair]
