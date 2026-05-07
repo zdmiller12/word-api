@@ -36,10 +36,10 @@ jobs:
       - name: Run pre-commit
         run: pre-commit run --all-files
 
-  build-and-push-scraper:
+  build-and-push-api:
     runs-on: ubuntu-latest
     env:
-      image-name: ${{ secrets.DOCKERHUB_USERNAME }}/word-scraper
+      image-name: ${{ secrets.DOCKERHUB_USERNAME }}/word-api
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.1
@@ -60,7 +60,7 @@ jobs:
             WORD_API_GIT_SHA=${{ github.sha }}
           cache-from: type=registry,ref=${{ env.image-name }}:buildcache
           cache-to: type=registry,ref=${{ env.image-name }}:buildcache,mode=max
-          context: ${{ github.workspace }}/services/scraper
+          context: ${{ github.workspace }}/services/word-api
           push: true
           tags: |
             ${{ env.image-name }}:latest
