@@ -64,18 +64,12 @@ async def _iter_records(
 async def get_dataset(
     date_from: Annotated[
         DateType | None,
-        Query(
-            default=None,
-            description="Start date, inclusive (e.g. 2024-01-01)",
-        ),
-    ],
+        Query(description="Start date, inclusive (e.g. 2024-01-01)"),
+    ] = None,
     date_to: Annotated[
         DateType | None,
-        Query(
-            default=None,
-            description="End date, inclusive (e.g. 2024-12-31)",
-        ),
-    ],
+        Query(description="End date, inclusive (e.g. 2024-12-31)"),
+    ] = None,
 ) -> StreamingResponse:
     """Stream a JSONL dataset of crossword puzzles extracted from saved NYT files.
 

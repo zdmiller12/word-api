@@ -57,3 +57,7 @@ filterwarnings = [
 extend = "../../ruff.toml"
 
 [tool.ruff.lint.extend-per-file-ignores]
+"tests/*" = [
+    "D104",
+    "PLR2004",
+]

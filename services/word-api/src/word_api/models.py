@@ -10,10 +10,10 @@ from pydantic import BaseModel, BeforeValidator, Field, PlainSerializer
 
 def parse_date(value: Any) -> date:
     """Try parsing date from value."""
-    if isinstance(value, date):
-        return value
     if isinstance(value, datetime):
         return value.date()
+    if isinstance(value, date):
+        return value
     try:
         return parser.parse(value).date()
     except (ValueError, TypeError) as exc:

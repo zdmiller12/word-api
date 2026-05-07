@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Main entry point for the scraper service."""
+"""Main entry point for the word API service."""
 
 import os
 
