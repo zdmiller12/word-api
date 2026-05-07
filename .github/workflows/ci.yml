@@ -28,9 +28,9 @@ jobs:
           python-version: ${{ env.python-version }}
 
       - name: Install dependencies
-        run: >
-          python -m pip install
-            pip==${{ env.pip-version }}
+        run: |
+          python -m pip install \
+            pip==${{ env.pip-version }} \
             pre-commit==${{ env.pre-commit-version }}
 
       - name: Run pre-commit
