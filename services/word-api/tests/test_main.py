@@ -7,6 +7,16 @@ from fastapi.testclient import TestClient
 from word_api.main import app
 
 
+def test_health() -> None:
+    """Health endpoint returns 200 with status ok and a version string."""
+    with TestClient(app) as client:
+        response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "ok"
+    assert "version" in data
+
+
 def test_generic_exception_handler() -> None:
     """Unhandled exceptions from route handlers return a 500 JSON response."""
     with (

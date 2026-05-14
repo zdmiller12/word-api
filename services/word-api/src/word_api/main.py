@@ -17,6 +17,12 @@ app.include_router(put_puzzle.router)
 app.include_router(get_dataset.router)
 
 
+@app.get("/health")
+async def health() -> dict[str, str]:
+    """Return service health status."""
+    return {"status": "ok", "version": app.version}
+
+
 @app.exception_handler(Exception)
 async def generic_exception_handler(_: Request, exc: Exception) -> JSONResponse:
     """Handle generic exceptions."""
