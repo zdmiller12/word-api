@@ -3,10 +3,12 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 # Setup a non-root user
 RUN groupadd --system --gid 999 nonroot \
- && useradd --system --gid 999 --uid 999 --create-home nonroot
+    && useradd --system --gid 999 --uid 999 --create-home nonroot
 
 # Install the project into `/app`
 WORKDIR /app
+RUN chown -R nonroot:nonroot /app
+USER nonroot
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
@@ -37,9 +39,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # Reset the entrypoint, don't invoke `uv`
 ENTRYPOINT []
-
-# Use the non-root user to run our application
-USER nonroot
 
 ARG WORD_API_GIT_SHA
 ENV WORD_API_GIT_SHA=${WORD_API_GIT_SHA}
