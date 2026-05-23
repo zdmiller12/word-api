@@ -5,9 +5,9 @@ services:
     restart: unless-stopped
     ports:
       # LAN access only — public traffic flows through cloudflared, not this port
-      - "${API_LAN_IP}:8000:8000"
+      - "${API_LAN_IP}:${API_PORT}:${API_PORT}"
     volumes:
-      - /volume1/docker/word-api/data:/home/nonroot/.local/share/word-api
+      - ${API_PATH_HOST_MACHINE}:/home/nonroot/.local/share/word-api
     user: "999:999"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
