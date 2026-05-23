@@ -4,7 +4,8 @@ services:
     container_name: word-api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      # LAN access only — public traffic flows through cloudflared, not this port
+      - "${API_LAN_IP}:8000:8000"
     volumes:
       - /volume1/docker/word-api/data:/home/nonroot/.local/share/word-api
     user: "999:999"
@@ -14,3 +15,13 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - word-api
