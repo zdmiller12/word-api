@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
+import itertools
 import json
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Iterable
 from datetime import date
 from typing import Annotated
 
 import aiofiles
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, status
 from fastapi.responses import StreamingResponse
 
-from word_api import constants as ct
-from word_api.models import DatasetRecord, DateType
+from word_api.constants import PUZZLES_PATH
+from word_api.models import CrosswordSource, DatasetRecord, DateType
 from word_api.sources import nyt
 
 logger = logging.getLogger(__name__)
@@ -23,16 +24,25 @@ router = APIRouter()
 async def _iter_records(
     date_from: date | None,
     date_to: date | None,
+    sources: Iterable[str] | None = None,
 ) -> AsyncIterator[DatasetRecord]:
     """Yield a DatasetRecord for each saved puzzle within the date range."""
-    paths = sorted(ct.PUZZLES_PATH.glob("source=nyt/year=*/month=*/day=*/puzzle.json"))
+    sources = sources or ["nyt"]
+    paths = sorted(
+        itertools.chain.from_iterable(
+            PUZZLES_PATH.glob(f"year=*/month=*/day=*/source={source}/puzzle.json")
+            for source in sources
+        )
+    )
     for path in paths:
         parts = {
             seg.split("=")[0]: seg.split("=")[1] for seg in path.parts if "=" in seg
         }
         try:
             puzzle_date = date(
-                int(parts["year"]), int(parts["month"]), int(parts["day"])
+                int(parts["year"]),
+                int(parts["month"]),
+                int(parts["day"]),
             )
         except (KeyError, ValueError):
             logger.warning("Could not parse date from path: %s", path)
@@ -55,7 +65,7 @@ async def _iter_records(
     "/dataset",
     response_class=StreamingResponse,
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "content": {"application/x-ndjson": {}},
             "description": "Streaming JSONL — one puzzle record per line",
         }
@@ -70,6 +80,10 @@ async def get_dataset(
         DateType | None,
         Query(description="End date, inclusive (e.g. 2024-12-31)"),
     ] = None,
+    sources: Annotated[
+        Iterable[CrosswordSource] | None,
+        Query(description="Sources to include in the dataset"),
+    ] = None,
 ) -> StreamingResponse:
     """Stream a JSONL dataset of crossword puzzles extracted from saved NYT files.
 
@@ -80,7 +94,11 @@ async def get_dataset(
     """
 
     async def generate() -> AsyncIterator[str]:
-        async for record in _iter_records(date_from=date_from, date_to=date_to):
+        async for record in _iter_records(
+            date_from=date_from,
+            date_to=date_to,
+            sources=sources,
+        ):
             yield record.model_dump_json() + "\n"
 
     return StreamingResponse(generate(), media_type="application/x-ndjson")

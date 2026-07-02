@@ -20,6 +20,8 @@ def parse_date(value: Any) -> date:
         raise ValueError(f"Unable to parse date from {value=}") from exc
 
 
+CrosswordSource = Literal["nyt"]
+
 type DateType = Annotated[
     date,
     BeforeValidator(parse_date),

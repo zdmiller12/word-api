@@ -2,27 +2,26 @@
 
 import json
 from datetime import date
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest import mock
 
 import httpx
 import pytest
 
-import word_api.constants as ct
 from word_api.sources import nyt
 
 
 @pytest.mark.anyio
-async def test_get_puzzle_success(minimal_puzzle: dict) -> None:
+async def test_get_puzzle_success(minimal_puzzle):
     """get_puzzle fetches the correct URL and returns parsed JSON."""
-    mock_response = MagicMock()
-    mock_response.raise_for_status = MagicMock()
+    mock_response = mock.MagicMock()
+    mock_response.raise_for_status = mock.MagicMock()
     mock_response.json.return_value = minimal_puzzle
 
-    with patch("httpx.AsyncClient") as mock_client:
+    with mock.patch("httpx.AsyncClient") as mock_client:
         inst = mock_client.return_value
-        inst.__aenter__ = AsyncMock(return_value=inst)
-        inst.__aexit__ = AsyncMock(return_value=None)
-        inst.get = AsyncMock(return_value=mock_response)
+        inst.__aenter__ = mock.AsyncMock(return_value=inst)
+        inst.__aexit__ = mock.AsyncMock(return_value=None)
+        inst.get = mock.AsyncMock(return_value=mock_response)
 
         result = await nyt.get_puzzle(date_=date(2024, 1, 1), token="tok")
 
@@ -35,65 +34,63 @@ async def test_get_puzzle_success(minimal_puzzle: dict) -> None:
 
 
 @pytest.mark.anyio
-async def test_get_puzzle_http_error() -> None:
+async def test_get_puzzle_http_error():
     """get_puzzle propagates HTTP errors from raise_for_status."""
-    mock_response = MagicMock()
+    mock_response = mock.MagicMock()
     mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-        "401 Unauthorized", request=MagicMock(), response=MagicMock()
+        "401 Unauthorized",
+        request=mock.MagicMock(),
+        response=mock.MagicMock(),
     )
 
-    with patch("httpx.AsyncClient") as mock_client:
+    with mock.patch("httpx.AsyncClient") as mock_client:
         inst = mock_client.return_value
-        inst.__aenter__ = AsyncMock(return_value=inst)
-        inst.__aexit__ = AsyncMock(return_value=None)
-        inst.get = AsyncMock(return_value=mock_response)
+        inst.__aenter__ = mock.AsyncMock(return_value=inst)
+        inst.__aexit__ = mock.AsyncMock(return_value=None)
+        inst.get = mock.AsyncMock(return_value=mock_response)
 
         with pytest.raises(httpx.HTTPStatusError):
             await nyt.get_puzzle(date_=date(2024, 1, 1), token="bad")
 
 
 @pytest.mark.anyio
-async def test_get_token(tmp_path: object, monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_get_token(monkeypatch, tmp_path):
     """get_token reads and strips the token from the .token file."""
-    token_dir = tmp_path / "nyt"  # type: ignore[operator]
+    monkeypatch.setattr(nyt, "SOURCES_PATH", tmp_path)
+
+    token_dir = tmp_path / "nyt"
     token_dir.mkdir()
     (token_dir / ".token").write_text("secret-token\n")
-
-    monkeypatch.setattr(ct, "SOURCES_PATH", tmp_path)
 
     result = await nyt.get_token()
     assert result == "secret-token"
 
 
 @pytest.mark.anyio
-async def test_save_board(
-    minimal_puzzle: dict, tmp_path: object, monkeypatch: pytest.MonkeyPatch
-) -> None:
+async def test_save_board(minimal_puzzle, monkeypatch, tmp_path):
     """save_board writes an indented SVG to the expected path."""
-    monkeypatch.setattr(ct, "BOARDS_PATH", tmp_path)
+    monkeypatch.setattr(nyt, "BOARDS_PATH", tmp_path)
 
     result = await nyt.save_board(date_=date(2024, 1, 1), puzzle=minimal_puzzle)
 
     expected = (
-        tmp_path / "source=nyt" / "year=2024" / "month=01" / "day=01" / "board.svg"
-    )  # type: ignore[operator]
+        tmp_path / "year=2024" / "month=01" / "day=01" / "source=nyt" / "board.svg"
+    )
     assert result == expected
     assert expected.exists()
     assert "<svg" in expected.read_text()
 
 
 @pytest.mark.anyio
-async def test_save_puzzle(
-    minimal_puzzle: dict, tmp_path: object, monkeypatch: pytest.MonkeyPatch
-) -> None:
+async def test_save_puzzle(minimal_puzzle, monkeypatch, tmp_path):
     """save_puzzle writes the puzzle JSON to the expected path."""
-    monkeypatch.setattr(ct, "PUZZLES_PATH", tmp_path)
+    monkeypatch.setattr(nyt, "PUZZLES_PATH", tmp_path)
 
     result = await nyt.save_puzzle(date_=date(2024, 1, 1), puzzle=minimal_puzzle)
 
     expected = (
-        tmp_path / "source=nyt" / "year=2024" / "month=01" / "day=01" / "puzzle.json"
-    )  # type: ignore[operator]
+        tmp_path / "year=2024" / "month=01" / "day=01" / "source=nyt" / "puzzle.json"
+    )
     assert result == expected
     assert expected.exists()
     saved = json.loads(expected.read_text())
@@ -101,25 +98,27 @@ async def test_save_puzzle(
 
 
 @pytest.mark.anyio
-async def test_put_puzzle(minimal_puzzle: dict, tmp_path: object) -> None:
+async def test_put_puzzle(minimal_puzzle, tmp_path):
     """put_puzzle composes sub-functions and returns a PutPuzzleResponse."""
-    board_path = tmp_path / "board.svg"  # type: ignore[operator]
-    puzzle_path = tmp_path / "puzzle.json"  # type: ignore[operator]
+    board_path = tmp_path / "board.svg"
+    puzzle_path = tmp_path / "puzzle.json"
 
     with (
-        patch(
+        mock.patch(
             "word_api.sources.nyt.get_puzzle",
-            new=AsyncMock(return_value=minimal_puzzle),
+            new=mock.AsyncMock(return_value=minimal_puzzle),
         ),
-        patch(
-            "word_api.sources.nyt.save_board", new=AsyncMock(return_value=board_path)
+        mock.patch(
+            "word_api.sources.nyt.save_board",
+            new=mock.AsyncMock(return_value=board_path),
         ),
-        patch(
-            "word_api.sources.nyt.save_puzzle", new=AsyncMock(return_value=puzzle_path)
+        mock.patch(
+            "word_api.sources.nyt.save_puzzle",
+            new=mock.AsyncMock(return_value=puzzle_path),
         ),
-        patch(
+        mock.patch(
             "word_api.sources.nyt.get_md5sum_from_path",
-            new=AsyncMock(side_effect=["a" * 32, "b" * 32]),
+            new=mock.AsyncMock(side_effect=["a" * 32, "b" * 32]),
         ),
     ):
         result = await nyt.put_puzzle(date_=date(2024, 1, 1), token="tok")
@@ -131,7 +130,7 @@ async def test_put_puzzle(minimal_puzzle: dict, tmp_path: object) -> None:
     assert result.saved[1].md5sum == "b" * 32
 
 
-def test_extract_dataset_record(minimal_puzzle: dict) -> None:
+def test_extract_dataset_record(minimal_puzzle):
     """extract_dataset_record converts a puzzle dict to a DatasetRecord."""
     record = nyt.extract_dataset_record(date_=date(2024, 1, 1), puzzle=minimal_puzzle)
 

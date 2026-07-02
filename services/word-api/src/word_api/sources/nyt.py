@@ -11,7 +11,7 @@ import aiofiles
 import httpx
 from lxml import etree
 
-from word_api import constants as ct
+from word_api.constants import BOARDS_PATH, PUZZLES_PATH, SOURCES_PATH
 from word_api.models import CluePair, DatasetRecord, LocalFile, PutPuzzleResponse
 from word_api.util import get_md5sum_from_path
 
@@ -38,7 +38,7 @@ async def get_puzzle(date_: date, token: str) -> dict:
 
 async def get_token() -> str:
     """Read NYT token from file."""
-    token_path = ct.SOURCES_PATH / "nyt" / ".token"
+    token_path = SOURCES_PATH / "nyt" / ".token"
     async with aiofiles.open(token_path) as f:
         return (await f.read()).strip()
 
@@ -69,11 +69,11 @@ async def put_puzzle(date_: date, token: str) -> PutPuzzleResponse:
 async def save_board(date_: date, puzzle: dict) -> Path:
     """Write the board of a NYT puzzle to an SVG file."""
     board_out = (
-        ct.BOARDS_PATH
-        / "source=nyt"
+        BOARDS_PATH
         / f"year={date_.year}"
         / f"month={str(date_.month).zfill(2)}"
         / f"day={str(date_.day).zfill(2)}"
+        / "source=nyt"
         / "board.svg"
     )
     board_out.parent.mkdir(parents=True, exist_ok=True)
@@ -113,11 +113,11 @@ def extract_dataset_record(date_: date, puzzle: dict) -> DatasetRecord:
 async def save_puzzle(date_: date, puzzle: dict) -> Path:
     """Write the puzzle data of a NYT puzzle to a JSON file."""
     puzzle_out = (
-        ct.PUZZLES_PATH
-        / "source=nyt"
+        PUZZLES_PATH
         / f"year={date_.year}"
         / f"month={str(date_.month).zfill(2)}"
         / f"day={str(date_.day).zfill(2)}"
+        / "source=nyt"
         / "puzzle.json"
     )
     puzzle_out.parent.mkdir(parents=True, exist_ok=True)

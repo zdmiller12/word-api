@@ -14,14 +14,6 @@ dependencies = [
     "uvicorn>=0.30.0",
 ]
 
-[tool.uv]
-
-[tool.hatch.build.targets.sdist]
-packages = ["src/word_api"]
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/word_api"]
-
 [build-system]
 requires = ["uv_build>=0.11.9,<0.12"]
 build-backend = "uv_build"
@@ -58,6 +50,9 @@ extend = "../../ruff.toml"
 
 [tool.ruff.lint.extend-per-file-ignores]
 "tests/*" = [
+    "ANN001",
+    "ANN201",
+    "ANN202",
     "D104",
     "PLR2004",
 ]

@@ -12,7 +12,7 @@ from word_api.routes.put_puzzle import PutPuzzleBody
 from word_api.routes.put_puzzle import put_puzzle as put_puzzle_handler
 
 
-def test_put_puzzle_with_body_token(put_puzzle_response: object) -> None:
+def test_put_puzzle_with_body_token(put_puzzle_response):
     """Token in request body is used directly."""
     with (
         patch(
@@ -27,7 +27,7 @@ def test_put_puzzle_with_body_token(put_puzzle_response: object) -> None:
     assert response.json()["source"] == "nyt"
 
 
-def test_put_puzzle_with_cookie_token(put_puzzle_response: object) -> None:
+def test_put_puzzle_with_cookie_token(put_puzzle_response):
     """NYT-S cookie is used when body token is absent."""
     with (
         patch(
@@ -45,7 +45,7 @@ def test_put_puzzle_with_cookie_token(put_puzzle_response: object) -> None:
     assert response.status_code == 200
 
 
-def test_put_puzzle_with_file_token(put_puzzle_response: object) -> None:
+def test_put_puzzle_with_file_token(put_puzzle_response):
     """Token from the .token file is used when body and cookie are absent."""
     with (
         patch(
@@ -62,7 +62,7 @@ def test_put_puzzle_with_file_token(put_puzzle_response: object) -> None:
     assert response.status_code == 200
 
 
-def test_put_puzzle_no_token_raises_401() -> None:
+def test_put_puzzle_no_token_raises_401():
     """All token sources returning None yields a 401 response."""
     with (
         patch("word_api.sources.nyt.get_token", new=AsyncMock(return_value=None)),
@@ -75,7 +75,7 @@ def test_put_puzzle_no_token_raises_401() -> None:
 
 
 @pytest.mark.anyio
-async def test_put_puzzle_unknown_source_raises_400() -> None:
+async def test_put_puzzle_unknown_source_raises_400():
     """Unsupported source value raises a 400 HTTPException."""
     body = PutPuzzleBody.model_construct(source="unknown")
     request = MagicMock()

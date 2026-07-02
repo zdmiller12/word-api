@@ -1,11 +1,13 @@
 """PUT a new crossword puzzle into the domain of the word API."""
 
-from typing import Annotated, Literal
+from __future__ import annotations
+
+from typing import Annotated
 
 from fastapi import APIRouter, Body, HTTPException, Path, Request, status
 from pydantic import BaseModel
 
-from word_api.models import DateType, Detail, PutPuzzleResponse
+from word_api.models import CrosswordSource, DateType, Detail, PutPuzzleResponse
 from word_api.sources import nyt
 
 router = APIRouter()
@@ -14,7 +16,7 @@ router = APIRouter()
 class PutPuzzleBody(BaseModel):
     """Request body for a put puzzle request."""
 
-    source: Literal["nyt"] = "nyt"
+    source: CrosswordSource = "nyt"
     token: str | None = None
 
 
